@@ -39,27 +39,11 @@ void getInput(string filename, vector<string> &searchString, vector<string> &sea
 
 }
 
-void ShiftTable(vector<char> &shiftTableTop, vector<int> &shiftTableBottom){
-    
-    for(unsigned i = 0; i<(shiftTableBottom).size(); i++){ 
-        cout << (shiftTableBottom).at(i) << endl;
-    }
-}
-
-void horspoolMatching(){
-    
-}
-
-void printOutput(vector<string> &searchString, vector<string> &searchPattern){
+void printOutput(int index){
     const string filename = "output.txt";
     ofstream file(filename);
-    for(unsigned i = 0; i<(searchString).size(); i++){ 
-        file << (searchString).at(i) << " ";
-    }
-    file << endl;
-    for(unsigned i = 0; i<(searchPattern).size(); i++){ 
-        file << (searchPattern).at(i) << " ";
-    }
+    file << index << endl;
+    
     file.close();
 }
 
@@ -69,46 +53,6 @@ int main(int argc, char** argv){
     
     vector<string> searchString;
     vector<string> searchPattern;
-    // vector<char> shiftTableTop;
-    // vector<int> shiftTableBottom;
-    int size = 150;
-    int table[size];
-    // char searchPattern[100], searchString[27];
-    //const char *SearchString = searchString.at(0).c_str();
-    cout << "Here" << endl;
-    //int num = searchString.at(0).length();
-    // for(int i = 0; i < 27; i++){
-    //     cout << i << endl;
-    //     shiftTableBottom.push_back(num);
-    // }
-
-    // shiftTableTop.push_back('A');
-    // shiftTableTop.push_back('B');
-    // shiftTableTop.push_back('C');
-    // shiftTableTop.push_back('D');
-    // shiftTableTop.push_back('E');
-    // shiftTableTop.push_back('F');
-    // shiftTableTop.push_back('G');
-    // shiftTableTop.push_back('H');
-    // shiftTableTop.push_back('I');
-    // shiftTableTop.push_back('J');
-    // shiftTableTop.push_back('K');
-    // shiftTableTop.push_back('L');
-    // shiftTableTop.push_back('M');
-    // shiftTableTop.push_back('N');
-    // shiftTableTop.push_back('O');
-    // shiftTableTop.push_back('P');
-    // shiftTableTop.push_back('Q');
-    // shiftTableTop.push_back('R');
-    // shiftTableTop.push_back('S');
-    // shiftTableTop.push_back('T');
-    // shiftTableTop.push_back('U');
-    // shiftTableTop.push_back('V');
-    // shiftTableTop.push_back('W');
-    // shiftTableTop.push_back('X');
-    // shiftTableTop.push_back('Y');
-    // shiftTableTop.push_back('Z');
-    // shiftTableTop.push_back(' ');
 
     string input;
     if(argc != 2) {
@@ -119,15 +63,58 @@ int main(int argc, char** argv){
     input = argv[1];
     
     getInput(input, searchString, searchPattern);
+
     
-    cout << "Here" << endl;
+    
+    int searchStringSize = searchString.at(0).length();
+    int searchPatternSize = searchPattern.at(0).length();
+
+    int searchPatternTestSize = searchPatternSize + 1;
+    int searchStringTestSize = searchStringSize + 1;
+    int tableSize = searchPatternTestSize + searchStringTestSize + 100;
+    int table[tableSize];
+    int n,i,k,j,m,flag=0;   //Setting up variables
+    int index = -1;
+
+    char searchPatternTest[searchPatternTestSize], searchStringTest[searchStringTestSize];  //turning strings into chars
+    searchPattern.at(0).copy(searchPatternTest, searchPatternTestSize);
+    searchPatternTest[searchPatternTestSize-1] = '\0';
+    searchString.at(0).copy(searchStringTest, searchStringTestSize);
+    searchStringTest[searchStringTestSize-1] = '\0';
+
+
+    n=strlen(searchPatternTest);
+    m=strlen(searchStringTest);
+    
+
+
+    
     start = clock();
     
-    //ShiftTable(shiftTableTop, shiftTableBottom);
+    
+    for(i=0;i<tableSize;i++)        //Generating table
+        table[i]=m;
+    for(j=0;j<=m-2;j++)
+        table[(int)searchStringTest[j]]=m-1-j;
+    i=m-1;  //position of the pattern's right end
+    while(i<=n-1) {
+        k=0;        //number of matched characters
+        while(k<=m-1 && searchPatternTest[m-1-k] == searchStringTest[i-k])
+            k++;
+        if(k == m) {
+            index = i-m+1; //returning the index if found
+            flag=1;
+            break;
+        } else
+            i=i+table[(int)searchPatternTest[i]];
+    }
+
+    if(!flag)
+        index = -1; //setting index to -1
 
     end = clock();
     cout << "Execution time: " << (double(end - start) / double(CLOCKS_PER_SEC / 1000)) << " milliseconds"<< endl;
 
-    printOutput(searchString, searchPattern);
+    printOutput(index);
     return 0;
 }

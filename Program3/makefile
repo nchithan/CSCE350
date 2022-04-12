@@ -9,7 +9,7 @@ LINK = $(CC) $(FLAGS) -o  # final linked build to binary executable
 COMPILE = $(CC) $(FLAGS) -c  # compilation to intermediary .o files
 
 
-HorspoolMatching : HorspoolMatching.cpp #HorspoolMatching.h
+HorspoolMatching : HorspoolMatching.cpp HorspoolMatching.h
 	$(LINK) $@ $<
 
 test : HorspoolMatching

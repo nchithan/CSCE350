@@ -7,9 +7,7 @@
 using std::string;
 using std::vector;
 
-void getInput(string file_name, vector<float> *input);
-void horspoolMatching(vector<float> *list, int left, int right);
-void print(vector<float> output, string file_name);
-void output(vector<float> output);
+void getInput(string filename, vector<string> &searchString, vector<string> &searchPattern);
+void printOutput(int index);
 
 #endif
