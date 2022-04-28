@@ -1,14 +1,10 @@
 #include <iostream>
 #include <fstream>
-#include <string>
 #include <vector>
-#include <chrono>
-#include <thread>
+#include <string>
 #include <sstream>
-#include <cstring>
 
-using std::clock;
-using std::clock_t;
+
 using std::cout;
 using std::endl;
 using std::ifstream;
@@ -16,43 +12,29 @@ using std::ofstream;
 using std::string;
 using std::vector;
 
+//This is infinity
+#define INF 99999
 
 
-void getInput(string filename, vector<string> &searchString, vector<string> &searchPattern){
-    ifstream file(filename);
-    string line;
-    if(file.good()){
-        getline(file, line);
-        searchString.push_back(line);
-    }
-    file.close();
-    std::chrono::milliseconds timespan(10);
-    std::this_thread::sleep_for(timespan);
 
-    ifstream file2(filename);
-    string line2;
-    while(getline(file2, line2)){
-        searchPattern.push_back(line2);
-    }
-    file2.close();
-    searchPattern.erase(searchPattern.begin());
-
-}
-
-void printOutput(int index){
+void printOutput(float **fDistance, int r, int c){
     const string filename = "output.txt";
     ofstream file(filename);
-    file << index << endl;
+    for(int i=0; i<r; i++){
+        for(int j=0; j<c; j++){
+            file << fDistance[i][j] << ' ';
+        }
+        file << endl;
+    }
     
     file.close();
 }
 
 int main(int argc, char** argv){
-    clock_t start, end;  
+    int colSize =0;
+    int rowSize =0;
+    float** array;
 
-    
-    vector<string> searchString;
-    vector<string> searchPattern;
 
     string input;
     if(argc != 2) {
@@ -61,60 +43,87 @@ int main(int argc, char** argv){
        exit(0);
     }
     input = argv[1];
-    
-    getInput(input, searchString, searchPattern);
+    //Getting the input array and putting it into an 2d vector
+    ifstream file(input);
+    int i=0, j=0, n=0;
+    string line;
+    vector<vector<float>> a;
 
-    
-    
-    int searchStringSize = searchString.at(0).length();
-    int searchPatternSize = searchPattern.at(0).length();
-
-    int searchPatternTestSize = searchPatternSize + 1;
-    int searchStringTestSize = searchStringSize + 1;
-    int tableSize = searchPatternTestSize + searchStringTestSize + 100;
-    int table[tableSize];
-    int n,i,k,j,m,flag=0;   //Setting up variables
-    int index = -1;
-
-    char searchPatternTest[searchPatternTestSize], searchStringTest[searchStringTestSize];  //turning strings into chars
-    searchPattern.at(0).copy(searchPatternTest, searchPatternTestSize);
-    searchPatternTest[searchPatternTestSize-1] = '\0';
-    searchString.at(0).copy(searchStringTest, searchStringTestSize);
-    searchStringTest[searchStringTestSize-1] = '\0';
-
-
-    n=strlen(searchPatternTest);
-    m=strlen(searchStringTest);
-    
-
-
-    
-    start = clock();
-    
-    
-    for(i=0;i<tableSize;i++)        //Generating table
-        table[i]=m;
-    for(j=0;j<=m-2;j++)
-        table[(int)searchStringTest[j]]=m-1-j;
-    i=m-1;  //position of the pattern's right end
-    while(i<=n-1) {
-        k=0;        //number of matched characters
-        while(k<=m-1 && searchPatternTest[m-1-k] == searchStringTest[i-k])
-            k++;
-        if(k == m) {
-            index = i-m+1; //returning the index if found
-            flag=1;
-            break;
-        } else
-            i=i+table[(int)searchPatternTest[i]];
+    for(;;)
+    {
+        getline(file, line);
+        if (! file) break; // test eof after read
+        a.push_back(vector<float>());
+        std::istringstream fline(line);
+        j = 0;
+        for(;;) {
+            float val;
+            fline >> val;
+            if (!fline) break;
+            a[i].push_back(val);
+            j++;
+        }
+        i++;
+        if (n == 0) n = j;
+        else if (n != j) {
+            std::cerr << "Error line " << i << " - " << j << " values instead of " << n << endl;
+        }
+    }
+    if (i != n) {
+        std::cerr << "Error " << i << " lines instead of " << n << endl;
     }
 
-    if(!flag)
-        index = -1; //setting index to -1
+    file.close();
+    rowSize = a.size();
+    colSize = a.size();
+    
+    array = new float*[rowSize];
+    for(i=0; i<rowSize; i++){
+        array[i] = new float[colSize];
+    }
 
-    end = clock();
-    cout << "Execution time: " << (double(end - start) / double(CLOCKS_PER_SEC / 1000)) << " milliseconds"<< endl;
+    //Copying the 2d vector into a regular 2d array
+    for (long unsigned int i = 0; i < a.size(); i++)
+    {
+        for (long unsigned int j = 0; j < a.size(); j++)
+        {
+            array[i][j] = a[i][j];
+            if(a[i][j] > 100){
+                array[i][j] = INF;
+            }
+        }  
+    }
+    //This was used for testing for bugs
+    // for (int i = 0; i < rowSize; i++)
+    // {
+    //     for (int j = 0; j < colSize; j++)
+    //     {
+    //         cout << array[i][j] << " ";
+    //     }   
+    //     cout << endl;
+    // }
 
-    printOutput(index);
+    int x,y,z;
+
+    for (z = 0; z < rowSize; z++) {
+        // Pick all vertices as source one by one
+        for (x = 0; x < rowSize; x++) {
+            // Pick all vertices as destination for the
+            // above picked source
+            for (y = 0; y < rowSize; y++) {
+                // If vertex z is on the shortest path from
+                // x to y, then update the value of
+                // array[x][y]
+                if (array[x][y] > (array[x][z] + array[z][y])
+                    && (array[z][y] != INF
+                        && array[x][z] != INF))
+                    array[x][y] = array[x][z] + array[z][y];
+            }
+        }
+    }
+
+
+
+    printOutput(array, rowSize, colSize);
     return 0;
 }
