@@ -7,7 +7,7 @@
 using std::string;
 using std::vector;
 
-void getInput(string filename, vector<string> &searchString, vector<string> &searchPattern);
+
 void printOutput(int index);
 
 #endif
